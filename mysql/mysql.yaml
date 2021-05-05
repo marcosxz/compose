@@ -1,10 +1,6 @@
 # https://registry.hub.docker.com/_/mysql
 version: '3'
 
-networks:
-  mysql:
-    driver: bridge
-
 services:
   mysql.master.01:
     image: mysql:8.0
@@ -14,54 +10,17 @@ services:
       --default-authentication-plugin=mysql_native_password
       --character-set-server=utf8mb4 
       --collation-server=utf8mb4_unicode_ci
+      --max_connections=3000
+      --secure-file-priv=NULL
+      --lower_case_table_names=2
     environment:
+      TZ: Asia/Shanghai
       MYSQL_ROOT_PASSWORD: root
       # MYSQL_USER: 
       # MYSQL_PASSWORD: 
     ports:
       - 3306:3306
     volumes:
-      - ./mysql.master.01/data:/var/lib/mysql
-      - ./mysql.master.01/conf/my.cnf:/etc/mysql/my.cnf
-    networks:
-      - mysql
-
-  mysql.slave.01:
-    image: mysql:8.0
-    container_name: mysql.slave.01
-    restart: always
-    command: 
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4 
-      --collation-server=utf8mb4_unicode_ci
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      # MYSQL_USER: 
-      # MYSQL_PASSWORD: 
-    ports:
-      - 3307:3306
-    volumes:
-      - ./mysql.slave.01/data:/var/lib/mysql
-      - ./mysql.slave.01/conf/my.cnf:/etc/mysql/my.cnf
-    networks:
-      - mysql
-
-  mysql.slave.02:
-    image: mysql:8.0
-    container_name: mysql.slave.02
-    restart: always
-    command: 
-      --default-authentication-plugin=mysql_native_password
-      --character-set-server=utf8mb4 
-      --collation-server=utf8mb4_unicode_ci
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      # MYSQL_USER: 
-      # MYSQL_PASSWORD: 
-    ports:
-      - 3308:3306
-    volumes:
-      - ./mysql.slave.02/data:/var/lib/mysql
-      - ./mysql.slave.02/conf/my.cnf:/etc/mysql/my.cnf
-    networks:
-      - mysql
+      - ./master.01/files:/var/lib/mysql-files
+      - ./master.01/data:/var/lib/mysql
+      - ./master.01/conf/my.cnf:/etc/mysql/my.cnf
