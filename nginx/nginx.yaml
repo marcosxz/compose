@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  nginx:
+   image: nginx
+   container_name: nginx
+   command: [nginx-debug, '-g', 'daemon off;']
+   restart: always
+   ports:
+     - 80:80
+     - 443:443
+   volumes:
+     - ./www:/etc/nginx/www
+     - ./conf.d:/etc/nginx/conf.d
+     - ./cert/letsencrypt:/etc/letsencrypt
+

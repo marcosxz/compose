@@ -1,0 +1,70 @@
+# https://registry.hub.docker.com/_/zookeeper
+# 如果连接zookeeper时出现SASL的错误，需要添加防火墙策略允许zookeeper的端口通过
+version: '3'
+
+networks:
+  fixednet:
+    ipam:
+      config:
+      - subnet: 192.10.1.0/24
+        gateway: 192.10.1.1
+
+# networks:
+#   zookeeper:
+#     driver: bridge
+
+services:
+  zookeeper.01:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper.01
+    container_name: zookeeper.01
+    ports:
+      - 2181:2181
+      - 2081:8080 # version >=3.5 zookeeper admin port
+    volumes:
+      - "./zookeeper.01/data:/data"
+      - "./zookeeper.01/datalog:/datalog"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=0.0.0.0:2888:3888;2181 server.2=zookeeper.02:2888:3888;2181 server.3=zookeeper.03:2888:3888;2181
+      JVMFLAGS: -Xmx512m -Dzookeeper.serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
+    networks:
+      - fixednet
+
+  zookeeper.02:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper.02
+    container_name: zookeeper.02
+    ports:
+      - 2182:2181
+      - 2082:8080 # version >=3.5 zookeeper admin port
+    volumes:
+      - "./zookeeper.02/data:/data"
+      - "./zookeeper.02/datalog:/datalog"
+    environment:
+      ZOO_MY_ID: 2
+      ZOO_SERVERS: server.1=zookeeper.01:2888:3888;2181 server.2=0.0.0.0:2888:3888;2181 server.3=zookeeper.03:2888:3888;2181
+      JVMFLAGS: -Xmx512m -Dzookeeper.serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
+    networks:
+      - fixednet
+
+  zookeeper.03:
+    image: zookeeper
+    restart: always
+    hostname: zookeeper.03
+    container_name: zookeeper.03
+    ports:
+      - 2183:2181
+      - 2083:8080 # version >=3.5 zookeeper admin port
+    volumes:
+      - "./zookeeper.03/data:/data"
+      - "./zookeeper.03/datalog:/datalog"
+    environment:
+      ZOO_MY_ID: 3
+      ZOO_SERVERS: server.1=zookeeper.01:2888:3888;2181 server.2=zookeeper.02:2888:3888;2181 server.3=0.0.0.0:2888:3888;2181
+      JVMFLAGS: -Xmx512m -Dzookeeper.serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
+    networks:
+      - fixednet
+

@@ -1,0 +1,152 @@
+# https://www.docker.elastic.co
+# https://www.cnblogs.com/reblue520/p/13962797.html
+# 生成证书elastic-certificates.p12
+# 进入一个容器，在其中生成证书
+# es提供了生成证书的工具elasticsearch-certutil，我们可以在docker实例中生成它，然后拷贝出来，然后给集群使用
+# docker exec -it xxx /bin/sh
+# 生成ca: elastic-stack-ca.p12
+# ./bin/elasticsearch-certutil ca
+# 再生成cert: elastic-certificates.p12
+# ./bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12
+# 这个生成elastic-certificates.p12 就是我们需要使用的
+# 复制出证书，然后退出容器，挂载证书后重启容器
+
+# 生成密码
+# 进入一个容器，在其中生成密码
+# docker exec -it xxx /bin/sh
+# 生动成密码用auto， 自己设置用interactive
+# ./bin/elasticsearch-setup-passwords -h
+# ./bin/elasticsearch-setup-passwords auto
+# ./bin/elasticsearch-setup-passwords interactive
+
+version: '3'
+
+networks:
+  elastic:
+    driver: bridge
+
+volumes:
+  elasticsearch.01:
+    driver: local
+  elasticsearch.02:
+    driver: local
+  elasticsearch.03:
+    driver: local
+
+services:
+  elasticsearch.01:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    container_name: elasticsearch.01
+    environment:
+      - node.name=elasticsearch.01
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch.02,elasticsearch.03
+      - cluster.initial_master_nodes=elasticsearch-01,elasticsearch.02,elasticsearch.03
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-credentials=true
+      # - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      # - xpack.security.enabled=true
+      # - xpack.security.transport.ssl.enabled=true
+      # - xpack.security.transport.ssl.verification_mode=certificate
+      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
+      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch.01:/usr/share/elasticsearch/data
+      # - ./elasticsearch.01/data:/usr/share/elasticsearch/data
+      # - ./elasticsearch.01/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch.01/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ./elasticsearch.01/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    ports:
+      - 9200:9200
+      - 9300:9300
+    networks:
+      - elastic
+
+  elasticsearch.02:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    container_name: elasticsearch.02
+    environment:
+      - node.name=elasticsearch.02
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch.01,elasticsearch.03
+      - cluster.initial_master_nodes=elasticsearch.01,elasticsearch.02,elasticsearch.03
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-credentials=true
+      # - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      # - xpack.security.enabled=true
+      # - xpack.security.transport.ssl.enabled=true
+      # - xpack.security.transport.ssl.verification_mode=certificate
+      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
+      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch.02:/usr/share/elasticsearch/data
+      # - ./elasticsearch.02/data:/usr/share/elasticsearch/data
+      # - ./elasticsearch.02/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch.02/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ./elasticsearch.02/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    ports:
+    ports:
+      - 9201:9200
+      - 9301:9300
+    networks:
+      - elastic
+
+  elasticsearch.03:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
+    container_name: elasticsearch.03
+    environment:
+      - node.name=elasticsearch.03
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch.01,elasticsearch.02
+      - cluster.initial_master_nodes=elasticsearch.01,elasticsearch.02,elasticsearch.03
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-credentials=true
+      # - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      # - xpack.security.enabled=true
+      # - xpack.security.transport.ssl.enabled=true
+      # - xpack.security.transport.ssl.verification_mode=certificate
+      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
+      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch.03:/usr/share/elasticsearch/data
+      # - ./elasticsearch.03/data:/usr/share/elasticsearch/data
+      # - ./elasticsearch.03/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch.03/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ./elasticsearch.03/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+    ports:
+      - 9202:9200
+      - 9302:9300
+    networks:
+      - elastic
+
+
+
+
+
+
+
+
+
+
+

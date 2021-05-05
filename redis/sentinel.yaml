@@ -1,0 +1,39 @@
+version: '3'
+
+networks:
+  redis:
+    driver: bridge
+
+services:
+  redis.sentinel.01:
+    image: redis
+    container_name: redis.sentinel.01 
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    ports:
+      - 26379:26379
+    volumes:
+      - ./redis.sentinel.01/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    networks:
+      - redis
+
+  redis.sentinel.02:
+    image: redis
+    container_name: redis.sentinel.02 
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    ports:
+      - 26380:26379
+    volumes:
+      - ./redis.sentinel.02/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    networks:
+      - redis
+
+  redis.sentinel.03:
+    image: redis
+    container_name: redis.sentinel.03
+    command: redis-sentinel /usr/local/etc/redis/sentinel.conf
+    ports:
+      - 26381:26379
+    volumes:
+      - ./redis.sentinel.03/sentinel.conf:/usr/local/etc/redis/sentinel.conf
+    networks:
+      - redis

@@ -1,0 +1,14 @@
+version: '3'
+
+networks:
+  elastic:
+    driver: bridge
+
+services:
+  elasticsearch-ui-head:
+    image: mobz/elasticsearch-head:5
+    container_name: elasticsearch-ui-head
+    ports:
+      - 9100:9100
+    networks:
+      - elastic

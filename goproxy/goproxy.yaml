@@ -1,0 +1,12 @@
+version: "3"
+
+services:
+  goproxy:
+    image: goproxy/goproxy:latest
+    container_name: goproxy
+    network_mode: bridge
+    command: "-listen=0.0.0.0:8080 -cacheDir=/tmp/goproxy/cache -proxy=https://goproxy.cn"
+    ports:
+      - 80:8080
+    volumes:
+      - /tmp/goproxy/cache:/tmp/goproxy/cache

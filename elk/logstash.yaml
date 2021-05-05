@@ -1,0 +1,75 @@
+# https://www.docker.elastic.co
+version: '3'
+
+networks:
+  elastic:
+    driver: bridge
+
+services:
+  logstash.01:
+      image: docker.elastic.co/logstash/logstash:7.11.1
+      container_name: logstash.01
+      ports:
+        - 9600:9600
+        - 8088:8088
+      networks:
+        - elastic
+      environment:
+        CONFIG_STRING: "
+          input {
+            http {
+              host => \"0.0.0.0\"
+              port => 8088
+              additional_codecs => {\"text/plain\"=>\"json\"}
+              codec => \"plain\"
+              threads => 8
+              ssl => false
+            }
+          }
+          filter {
+
+          }
+          output {
+            stdout { 
+              codec => json
+            }
+            elasticsearch {
+              hosts => [\"http://elasticsearch.01:9200\", \"http://elasticsearch.02:9200\", \"http://elasticsearch.03:9200\"]
+            }
+          }
+        "
+
+  logstash.02:
+      image: docker.elastic.co/logstash/logstash:7.11.1
+      container_name: logstash.02
+      ports:
+        - 9601:9600
+        - 8089:8088
+      networks:
+        - elastic
+      environment:
+        CONFIG_STRING: "
+          input {
+            http {
+              host => \"0.0.0.0\"
+              port => 8088
+              additional_codecs => {\"text/plain\"=>\"json\"}
+              codec => \"plain\"
+              threads => 8
+              ssl => false
+            }
+          }
+          filter {
+
+          }
+          output {
+            stdout { 
+              codec => json
+            }
+            elasticsearch {
+              hosts => [\"http://elasticsearch.01:9200\", \"http://elasticsearch.02:9200\", \"http://elasticsearch.03:9200\"]
+            }
+          }
+        "
+
+

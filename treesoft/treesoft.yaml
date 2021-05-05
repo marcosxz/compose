@@ -1,0 +1,38 @@
+# https://github.com/mctz/treesoft
+# http://localhost:8888/treenms
+# http://localhost:8888/treedms
+version: '3'
+
+services:
+  treesoft:
+    image: lu566/treesoft:1.0
+    container_name: tree_nms_dms
+    restart: always
+    ports:
+      - 8888:8080
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

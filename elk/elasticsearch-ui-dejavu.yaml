@@ -1,0 +1,14 @@
+version: '3'
+
+networks:
+  elastic:
+    driver: bridge
+
+services:
+  elasticsearch-ui-dejavu:
+    image: appbaseio/dejavu
+    container_name: elasticsearch-ui-dejavu
+    ports:
+      - 1358:1358
+    networks:
+      - elastic

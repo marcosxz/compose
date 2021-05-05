@@ -1,0 +1,19 @@
+# https://github.com/qnib/docker-zkui
+version: '3'
+
+networks:
+  zookeeper:
+    driver: bridge
+
+services:
+  zookeeper-ui-zkui:
+    image: qnib/zkui
+    container_name: zookeeper-ui-zkui
+    ports:
+      - 9090:9090
+    environment:
+      ZKUI_ZK_SERVER: zookeeper.01:2181
+      ZKUI_ADMIN_PW: 123456 # admin/admin for read/write access, to change the password provide ZKUI_ADMIN_PW=pass
+      ZKUI_USER_PW: 123456 # user/user for read-only access, to change the password provide ZKUI_USER_PW=pass
+    networks:
+      - zookeeper

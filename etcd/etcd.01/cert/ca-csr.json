@@ -1,0 +1,18 @@
+{
+    "CN": "etcd.ex.com",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "CN",
+            "L": "CA",
+            "O": "ETCD",
+            "ST": "ChengDu",
+            "OU": "ETCD"
+        }
+    ]
+}
+
+

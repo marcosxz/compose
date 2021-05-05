@@ -1,0 +1,146 @@
+version: '3'
+
+networks:
+  fixednet:
+    ipam:
+      config:
+      - subnet: 192.10.1.0/24
+        gateway: 192.10.1.1
+
+services:
+  etcd.01:
+    image: quay.io/coreos/etcd
+    container_name: etcd.01
+    # command太长使用environment设置参数,对应关系:https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/configuration.md
+    # command: etcd 
+    #   -name etcd.01 
+    #   -advertise-client-urls http://0.0.0.0:2379 
+    #   -listen-client-urls http://0.0.0.0:2379 
+    #   -listen-peer-urls http://0.0.0.0:2380 
+    #   -initial-cluster-token etcd-cluster 
+    #   -initial-cluster "etcd.01=http://etcd.01:2380,etcd.02=http://etcd.02:2380,etcd.03=http://etcd.03:2380" 
+    #   -initial-cluster-state new
+    ports:
+      - 2379:2379
+      - 2380:2380
+    environment:
+      - ETCD_NAME=etcd.01
+      - ETCDCTL_API=3
+      - ETCD_ADVERTISE_CLIENT_URLS=https://0.0.0.0:2379
+      - ETCD_LISTEN_CLIENT_URLS=https://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=https://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=https://etcd.01:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+      - ETCD_INITIAL_CLUSTER=etcd.01=https://etcd.01:2380,etcd.02=https://etcd.02:2380,etcd.03=https://etcd.03:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      - ETCD_DATA_DIR=/data
+      # client to server tls
+      - ETCD_CLIENT_CERT_AUTH=true
+      - ETCD_KEY_FILE=/var/ssl/etcd-key.pem
+      - ETCD_CERT_FILE=/var/ssl/etcd.pem
+      - ETCD_CA_FILE=/var/ssl/ca.pem
+      - ETCD_TRUSTED_CA_FILE=/var/ssl/ca.pem
+      # server to server tls
+      - ETCD_PEER_CLIENT_CERT_AUTH=true
+      - ETCD_PEER_KEY_FILE=/var/ssl/etcd-key.pem
+      - ETCD_PEER_CERT_FILE=/var/ssl/etcd.pem
+      - ETCD_PEER_CA_FILE=/var/ssl/ca.pem
+      - ETCD_PEER_TRUSTED_CA_FILE=/var/ssl/ca.pem
+    volumes:
+      - ./etcd.01/data:/data
+      - ./etcd.01/cert:/var/ssl
+    networks:
+      fixednet:
+        ipv4_address: 192.10.1.10
+
+  etcd.02:
+    image: quay.io/coreos/etcd
+    container_name: etcd.02
+    # command太长使用environment设置参数,对应关系:https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/configuration.md
+    # command: etcd 
+    #   -name etcd.02 
+    #   -advertise-client-urls http://0.0.0.0:2379 
+    #   -listen-client-urls http://0.0.0.0:2379 
+    #   -listen-peer-urls http://0.0.0.0:2380 
+    #   -initial-cluster-token etcd-cluster 
+    #   -initial-cluster "etcd.01=http://etcd.01:2380,etcd.02=http://etcd.02:2380,etcd.03=http://etcd.03:2380" 
+    #   -initial-cluster-state new
+    ports:
+      - 2389:2379
+      - 2382:2380
+    environment:
+      - ETCD_NAME=etcd.02
+      - ETCDCTL_API=3
+      - ETCD_ADVERTISE_CLIENT_URLS=https://0.0.0.0:2379
+      - ETCD_LISTEN_CLIENT_URLS=https://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=https://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=https://etcd.02:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+      - ETCD_INITIAL_CLUSTER=etcd.01=https://etcd.01:2380,etcd.02=https://etcd.02:2380,etcd.03=https://etcd.03:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      - ETCD_DATA_DIR=/data
+      # client to server tls
+      - ETCD_CLIENT_CERT_AUTH=true
+      - ETCD_KEY_FILE=/var/ssl/etcd-key.pem
+      - ETCD_CERT_FILE=/var/ssl/etcd.pem
+      - ETCD_CA_FILE=/var/ssl/ca.pem
+      - ETCD_TRUSTED_CA_FILE=/var/ssl/ca.pem
+      # server to server tls
+      - ETCD_PEER_CLIENT_CERT_AUTH=true
+      - ETCD_PEER_KEY_FILE=/var/ssl/etcd-key.pem
+      - ETCD_PEER_CERT_FILE=/var/ssl/etcd.pem
+      - ETCD_PEER_CA_FILE=/var/ssl/ca.pem
+      - ETCD_PEER_TRUSTED_CA_FILE=/var/ssl/ca.pem
+    volumes:
+      - ./etcd.02/data:/data
+      - ./etcd.02/cert:/var/ssl
+    networks:
+      fixednet:
+        ipv4_address: 192.10.1.20
+
+  etcd3:
+    image: quay.io/coreos/etcd
+    container_name: etcd.03
+    # command太长使用environment设置参数,对应关系:https://github.com/etcd-io/etcd/blob/master/Documentation/op-guide/configuration.md
+    # command: etcd 
+    #   -name etcd.03 
+    #   -advertise-client-urls http://0.0.0.0:2379 
+    #   -listen-client-urls http://0.0.0.0:2379 
+    #   -listen-peer-urls http://0.0.0.0:2380 
+    #   -initial-cluster-token etcd-cluster 
+    #   -initial-cluster "etcd.01=http://etcd.01:2380,etcd.02=http://etcd.02:2380,etcd.03=http://etcd.03:2380" 
+    #   -initial-cluster-state new
+    ports:
+      - 2399:2379
+      - 2384:2380
+    environment:
+      - ETCD_NAME=etcd.03
+      - ETCDCTL_API=3
+      - ETCD_ADVERTISE_CLIENT_URLS=https://0.0.0.0:2379
+      - ETCD_LISTEN_CLIENT_URLS=https://0.0.0.0:2379
+      - ETCD_LISTEN_PEER_URLS=https://0.0.0.0:2380
+      - ETCD_INITIAL_ADVERTISE_PEER_URLS=https://etcd.03:2380
+      - ETCD_INITIAL_CLUSTER_TOKEN=etcd-cluster
+      - ETCD_INITIAL_CLUSTER=etcd.01=https://etcd.01:2380,etcd.02=https://etcd.02:2380,etcd.03=https://etcd.03:2380
+      - ETCD_INITIAL_CLUSTER_STATE=new
+      - ETCD_DATA_DIR=/data
+      # client to server tls
+      - ETCD_CLIENT_CERT_AUTH=true
+      - ETCD_KEY_FILE=/var/ssl/etcd-key.pem
+      - ETCD_CERT_FILE=/var/ssl/etcd.pem
+      - ETCD_CA_FILE=/var/ssl/ca.pem
+      - ETCD_TRUSTED_CA_FILE=/var/ssl/ca.pem
+      # server to server tls
+      - ETCD_PEER_CLIENT_CERT_AUTH=true
+      - ETCD_PEER_KEY_FILE=/var/ssl/etcd-key.pem
+      - ETCD_PEER_CERT_FILE=/var/ssl/etcd.pem
+      - ETCD_PEER_CA_FILE=/var/ssl/ca.pem
+      - ETCD_PEER_TRUSTED_CA_FILE=/var/ssl/ca.pem
+    volumes:
+      - ./etcd.03/data:/data
+      - ./etcd.03/cert:/var/ssl
+    networks:
+      fixednet:
+        ipv4_address: 192.10.1.30
+
+

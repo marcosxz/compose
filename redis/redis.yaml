@@ -1,0 +1,50 @@
+version: '3'
+
+networks:
+  redis:
+    driver: bridge
+
+services:
+  redis.master:
+    image: redis
+    container_name: redis.master
+    command: redis-server 
+      --requirepass 123456
+    ports:
+      - 6379:6379
+    volumes:
+      - ./redis.master/data:/data
+      - ./redis.master/conf:/usr/local/etc/redis
+    networks:
+      - redis
+
+  redis.slave.01:
+    image: redis
+    container_name: redis.slave.01
+    command: redis-server 
+      --slaveof redis.master 6379 
+      --masterauth 123456 
+      --requirepass 123456
+    ports:
+      - 6380:6379
+    volumes:
+      - ./redis.slave.01/data:/data
+      - ./redis.slave.01/conf:/usr/local/etc/redis
+    networks:
+      - redis
+
+  redis.slave.02:
+    image: redis
+    container_name: redis.slave.02
+    command: redis-server 
+      --slaveof redis.master 6379 
+      --masterauth 123456 
+      --requirepass 123456
+    ports:
+      - 6381:6379
+    volumes:
+      - ./redis.slave.02/data:/data
+      - ./redis.slave.02/conf:/usr/local/etc/redis
+    networks:
+      - redis
+

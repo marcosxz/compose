@@ -1,0 +1,37 @@
+# https://www.docker.elastic.co
+version: '3'
+
+networks:
+  elastic:
+    driver: bridge
+
+services:
+  kibana.01:
+    image: docker.elastic.co/kibana/kibana:7.11.2
+    container_name: kibana.01
+    ports:
+      - 5601:5601
+    networks:
+      - elastic
+    environment:
+      SERVER_NAME: kibana.01
+      SERVER_HOST: 0.0.0.0
+      ELASTICSEARCH_HOSTS: http://elasticsearch.01:9200
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: changme
+      I18N_LOCALE: zh-CN
+
+  kibana.02:
+    image: docker.elastic.co/kibana/kibana:7.11.2
+    container_name: kibana.02
+    ports:
+      - 5602:5601
+    networks:
+      - elastic
+    environment:
+      SERVER_NAME: kibana.02
+      SERVER_HOST: 0.0.0.0
+      ELASTICSEARCH_HOSTS: http://elasticsearch.02:9200
+      ELASTICSEARCH_USERNAME: elastic
+      ELASTICSEARCH_PASSWORD: changme
+      I18N_LOCALE: zh-CN

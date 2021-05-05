@@ -1,0 +1,67 @@
+# https://github.com/wurstmeister/kafka-docker
+version: '3'
+
+# networks:
+#   kafka:
+#     driver: bridge
+
+networks:
+  fixednet:
+    external:
+      name: zookeeper_fixednet
+
+services:
+  kafka.01:
+    image: wurstmeister/kafka
+    restart: always
+    hostname: kafka.01
+    container_name: kafka.01
+    ports:
+      - 9092:9092
+    environment:
+      BROKER_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.16.57.179:9092 # 不同的机器上使用和kafka.01相同的port
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper.01:2181,zookeeper.02:2182,zookeeper.03:2183
+      JMX_PORT: 9999
+    volumes:
+      - ./kafka.01:/kafka
+    networks:
+      - fixednet
+
+  kafka.02:
+    image: wurstmeister/kafka
+    restart: always
+    hostname: kafka.02
+    container_name: kafka.02
+    ports:
+      - 9093:9092
+    environment:
+      BROKER_ID: 2
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.16.57.179:9093 # 不同的机器上使用和kafka.01相同的port
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper.01:2181,zookeeper.02:2182,zookeeper.03:2183
+      JMX_PORT: 9988
+    volumes:
+      - ./kafka.02:/kafka
+    networks:
+      - fixednet
+
+  kafka.03:
+    image: wurstmeister/kafka
+    restart: always
+    hostname: kafka.03
+    container_name: kafka.03
+    ports:
+      - 9094:9092
+    environment:
+      BROKER_ID: 3
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://172.16.57.179:9094 # 不同的机器上使用和kafka.01相同的port
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper.01:2181,zookeeper.02:2182,zookeeper.03:2183
+      JMX_PORT: 9977 
+    volumes:
+      - ./kafka.03:/kafka
+    networks:
+      - fixednet
+

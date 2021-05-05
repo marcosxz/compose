@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  registry.ui.frontend:
+    image: konradkleine/docker-registry-frontend:v2
+    container_name: registry.ui.frontend
+    ports:
+      - 5010:80
+    environment:
+      - ENV_DOCKER_REGISTRY_HOST=192.10.1.9
+      - ENV_DOCKER_REGISTRY_PORT=5000
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
