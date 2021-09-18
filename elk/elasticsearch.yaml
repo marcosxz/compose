@@ -108,7 +108,6 @@ services:
       # - ./elasticsearch02/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       # - ./elasticsearch02/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
     ports:
-    ports:
       - 9201:9200
       - 9301:9300
     networks:
