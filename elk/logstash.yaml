@@ -55,7 +55,7 @@ services:
             }
             kafka {
                 type => "kafkalog"
-                bootstrap_servers => "47.101.190.124:9192"
+                bootstrap_servers => "0.0.0.0:9092"
                 topics => ["logstash"]
                 group_id => "logstash01"
                 enable_auto_commit => true
