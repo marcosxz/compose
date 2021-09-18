@@ -6,32 +6,50 @@ networks:
     driver: bridge
 
 services:
-  kibana.01:
-    image: docker.elastic.co/kibana/kibana:7.11.2
-    container_name: kibana.01
+  kibana01:
+    image: kibana:7.14.1
+    container_name: kibana01
     ports:
       - 5601:5601
     networks:
       - elastic
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     environment:
-      SERVER_NAME: kibana.01
+      TZ: 'Asia/Shanghai'
+      SERVER_NAME: kibana01
       SERVER_HOST: 0.0.0.0
-      ELASTICSEARCH_HOSTS: http://elasticsearch.01:9200
-      ELASTICSEARCH_USERNAME: elastic
-      ELASTICSEARCH_PASSWORD: changme
+      ELASTICSEARCH_HOSTS: '["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]'
+      #ELASTICSEARCH_USERNAME: elastic
+      #ELASTICSEARCH_PASSWORD: changme
       I18N_LOCALE: zh-CN
+      # SERVER_SSL_ENABLED: "true"
+      # SERVER_SSL_KEY: $CERTS_DIR/kib01/kib01.key
+      # SERVER_SSL_CERTIFICATE: $CERTS_DIR/kib01/kib01.crt
 
-  kibana.02:
-    image: docker.elastic.co/kibana/kibana:7.11.2
-    container_name: kibana.02
+  kibana02:
+    image: kibana:7.14.1
+    container_name: kibana02
     ports:
       - 5602:5601
     networks:
       - elastic
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
     environment:
-      SERVER_NAME: kibana.02
+      TZ: 'Asia/Shanghai'
+      SERVER_NAME: kibana02
       SERVER_HOST: 0.0.0.0
-      ELASTICSEARCH_HOSTS: http://elasticsearch.02:9200
-      ELASTICSEARCH_USERNAME: elastic
-      ELASTICSEARCH_PASSWORD: changme
+      ELASTICSEARCH_HOSTS: '["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]'
+      #ELASTICSEARCH_USERNAME: elastic
+      #ELASTICSEARCH_PASSWORD: changme
       I18N_LOCALE: zh-CN
+      # SERVER_SSL_ENABLED: "true"
+      # SERVER_SSL_KEY: $CERTS_DIR/kib01/kib01.key
+      # SERVER_SSL_CERTIFICATE: $CERTS_DIR/kib01/kib01.crt

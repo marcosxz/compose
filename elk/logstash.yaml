@@ -5,71 +5,319 @@ networks:
   elastic:
     driver: bridge
 
+volumes:
+  logstash01:
+    driver: local
+  logstash02:
+    driver: local
+
 services:
-  logstash.01:
-      image: docker.elastic.co/logstash/logstash:7.11.1
-      container_name: logstash.01
+  logstash01:
+      image: logstash:7.14.1
+      container_name: logstash01
       ports:
         - 9600:9600
         - 8088:8088
+        - 8514:514
       networks:
         - elastic
+      volumes:
+        - ./logstash01/data:/usr/share/logstash/data
+        # - ./logstash01/pipeline:/usr/share/logstash/pipeline
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "200k"
+          max-file: "10"
       environment:
-        CONFIG_STRING: "
+        TZ: 'Asia/Shanghai'
+        PIPELINE_ID: "main"
+        PIPELINE_WORKERS: 2
+        PIPELINE_BATCH_SIZE: 125
+        PIPELINE_BATCH_DELAY: 50
+        XPACK_MONITORING_ENABLED: "false"
+        CONFIG_DEBUG: "true"
+        CONFIG_STRING: |
           input {
+            syslog {
+                type => "syslog"
+                host => "0.0.0.0"
+                port => "514"
+            }
             http {
-              host => \"0.0.0.0\"
-              port => 8088
-              additional_codecs => {\"text/plain\"=>\"json\"}
-              codec => \"plain\"
-              threads => 8
-              ssl => false
+                type => "httplog"
+                host => "0.0.0.0"
+                port => "8088"
+                additional_codecs => {"text/plain"=>"json"}
+                codec => "json"
+                threads => 8
+                ssl => false
+            }
+            kafka {
+                type => "kafkalog"
+                bootstrap_servers => "47.101.190.124:9192"
+                topics => ["logstash"]
+                group_id => "logstash01"
+                enable_auto_commit => true
+                auto_commit_interval_ms => 3000
+                auto_offset_reset => "latest"
+                consumer_threads => 1
+                connections_max_idle_ms => 60000
+                heartbeat_interval_ms => 3000
+                codec => "json"
             }
           }
+
           filter {
+              if [type] == "syslog" and [program] {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-%{program}_%{+YYYYMMdd}" }
+                  }
+                  if [program] == "nginx_access" {
+                      json {
+                          source => "message"
+                          remove_field => ["message"]
+                      }
+                  }
+              }
 
+              if [type] == "httplog" and [app] {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-%{app}_%{+YYYYMMdd}" }
+                  }
+              }
+
+              if [type] == "kafkalog" and [app] {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-%{app}_%{+YYYYMMdd}" }
+                  }
+              }
+
+              if ([type] not in ["syslog", "httplog", "kafkalog"]) or (![program] and ![app]) {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-default_%{+YYYYMMdd}" }
+                  }
+              }
+
+              if [ip] {
+                  geoip { 
+                      source => "ip"
+                  }
+              }
+              if [remote_addr] {
+                  geoip { 
+                      source => "remote_addr"
+                  }
+              }
+
+              if [type] == "syslog" {
+                  mutate {
+                      remove_field => ["program"]
+                      remove_field => ["timestamp"]
+                      remove_field => ["severity"]
+                      remove_field => ["priority"]
+                      remove_field => ["facility"]
+                      remove_field => ["facility_label"]
+                      remove_field => ["logsource"]
+                      remove_field => ["severity_label"]
+                  }
+              }
+              if [type] == "httplog" {
+                  mutate {
+                      remove_field => ["headers"]
+                  }
+              }
           }
+
           output {
-            stdout { 
-              codec => json
-            }
-            elasticsearch {
-              hosts => [\"http://elasticsearch.01:9200\", \"http://elasticsearch.02:9200\", \"http://elasticsearch.03:9200\"]
-            }
-          }
-        "
+              stdout { codec => rubydebug }
 
-  logstash.02:
-      image: docker.elastic.co/logstash/logstash:7.11.1
-      container_name: logstash.02
+              if [type] == "syslog" {
+                  elasticsearch {
+                      hosts => ["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]
+                      index => "%{[@metadata][es_index]}"
+                      retry_initial_interval => 3
+                      retry_max_interval => 64
+                      retry_on_conflict => 3
+                      timeout => 5
+                  }
+              }
+
+              if [type] == "httplog" {
+                  elasticsearch {
+                      hosts => ["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]
+                      index => "%{[@metadata][es_index]}"
+                      retry_initial_interval => 3
+                      retry_max_interval => 64
+                      retry_on_conflict => 3
+                      timeout => 5
+                  }
+              }
+
+              if [type] == "kafkalog" {
+                  elasticsearch {
+                      hosts => ["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]
+                      index => "%{[@metadata][es_index]}"
+                      retry_initial_interval => 3
+                      retry_max_interval => 64
+                      retry_on_conflict => 3
+                      timeout => 5
+                  }
+              }
+          }
+
+  logstash02:
+      image: logstash:7.14.1
+      container_name: logstash02
       ports:
         - 9601:9600
         - 8089:8088
+        - 8515:514
       networks:
         - elastic
+      volumes:
+        - ./logstash02/data:/usr/share/logstash/data
+        # - ./logstash02/pipeline:/usr/share/logstash/pipeline
+      logging:
+        driver: "json-file"
+        options:
+          max-size: "200k"
+          max-file: "10"
       environment:
-        CONFIG_STRING: "
+        TZ: 'Asia/Shanghai'
+        PIPELINE_ID: "main"
+        PIPELINE_WORKERS: 2
+        PIPELINE_BATCH_SIZE: 125
+        PIPELINE_BATCH_DELAY: 50
+        XPACK_MONITORING_ENABLED: "false"
+        CONFIG_DEBUG: "true"
+        CONFIG_STRING: |
           input {
+            syslog {
+                type => "syslog"
+                host => "0.0.0.0"
+                port => "514"
+            }
             http {
-              host => \"0.0.0.0\"
-              port => 8088
-              additional_codecs => {\"text/plain\"=>\"json\"}
-              codec => \"plain\"
-              threads => 8
-              ssl => false
+                type => "httplog"
+                host => "0.0.0.0"
+                port => "8088"
+                additional_codecs => {"text/plain"=>"json"}
+                codec => "json"
+                threads => 8
+                ssl => false
+            }
+            kafka {
+                type => "kafkalog"
+                bootstrap_servers => "0.0.0.0:9092"
+                topics => ["logstash"]
+                group_id => "logstash02"
+                enable_auto_commit => true
+                auto_commit_interval_ms => 3000
+                auto_offset_reset => "latest"
+                consumer_threads => 1
+                connections_max_idle_ms => 60000
+                heartbeat_interval_ms => 3000
+                codec => "json"
             }
           }
-          filter {
 
+          filter {
+              if [type] == "syslog" and [program] {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-%{program}_%{+YYYYMMdd}" }
+                  }
+                  if [program] == "nginx_access" {
+                      json {
+                          source => "message"
+                          remove_field => ["message"]
+                      }
+                  }
+              }
+
+              if [type] == "httplog" and [app] {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-%{app}_%{+YYYYMMdd}" }
+                  }
+              }
+
+              if [type] == "kafkalog" and [app] {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-%{app}_%{+YYYYMMdd}" }
+                  }
+              }
+
+              if ([type] not in ["syslog", "httplog", "kafkalog"]) or (![program] and ![app]) {
+                  mutate {
+                      add_field => { "[@metadata][es_index]" => "logstash-default_%{+YYYYMMdd}" }
+                  }
+              }
+
+              if [ip] {
+                  geoip { 
+                      source => "ip"
+                  }
+              }
+              if [remote_addr] {
+                  geoip { 
+                      source => "remote_addr"
+                  }
+              }
+
+              if [type] == "syslog" {
+                  mutate {
+                      remove_field => ["program"]
+                      remove_field => ["timestamp"]
+                      remove_field => ["severity"]
+                      remove_field => ["priority"]
+                      remove_field => ["facility"]
+                      remove_field => ["facility_label"]
+                      remove_field => ["logsource"]
+                      remove_field => ["severity_label"]
+                  }
+              }
+              if [type] == "httplog" {
+                  mutate {
+                      remove_field => ["headers"]
+                  }
+              }
           }
+
           output {
-            stdout { 
-              codec => json
-            }
-            elasticsearch {
-              hosts => [\"http://elasticsearch.01:9200\", \"http://elasticsearch.02:9200\", \"http://elasticsearch.03:9200\"]
-            }
+              stdout { codec => rubydebug }
+
+              if [type] == "syslog" {
+                  elasticsearch {
+                      hosts => ["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]
+                      index => "%{[@metadata][es_index]}"
+                      retry_initial_interval => 3
+                      retry_max_interval => 64
+                      retry_on_conflict => 3
+                      timeout => 5
+                  }
+              }
+
+              if [type] == "httplog" {
+                  elasticsearch {
+                      hosts => ["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]
+                      index => "%{[@metadata][es_index]}"
+                      retry_initial_interval => 3
+                      retry_max_interval => 64
+                      retry_on_conflict => 3
+                      timeout => 5
+                  }
+              }
+
+              if [type] == "kafkalog" {
+                  elasticsearch {
+                      hosts => ["http://elastic:changme@elasticsearch01:9200","http://elastic:changme@elasticsearch02:9200","http://elastic:changme@elasticsearch03:9200"]
+                      index => "%{[@metadata][es_index]}"
+                      retry_initial_interval => 3
+                      retry_max_interval => 64
+                      retry_on_conflict => 3
+                      timeout => 5
+                  }
+              }
           }
-        "
 
 

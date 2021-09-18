@@ -1,4 +1,6 @@
 # https://www.docker.elastic.co
+# https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-docker.html
+# https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_set_vm_max_map_count_to_at_least_262144 !!!note:7.14需要设置系统参数
 # https://www.cnblogs.com/reblue520/p/13962797.html
 # 生成证书elastic-certificates.p12
 # 进入一个容器，在其中生成证书
@@ -26,22 +28,23 @@ networks:
     driver: bridge
 
 volumes:
-  elasticsearch.01:
+ elasticsearch01:
     driver: local
-  elasticsearch.02:
+ elasticsearch02:
     driver: local
-  elasticsearch.03:
+ elasticsearch03:
     driver: local
 
 services:
-  elasticsearch.01:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
-    container_name: elasticsearch.01
+ elasticsearch01:
+    image: elasticsearch:7.14.1
+    container_name: elasticsearch01
     environment:
-      - node.name=elasticsearch.01
+      - TZ=Asia/Shanghai
+      - node.name=elasticsearch01
       - cluster.name=elasticsearch-cluster
-      - discovery.seed_hosts=elasticsearch.02,elasticsearch.03
-      - cluster.initial_master_nodes=elasticsearch-01,elasticsearch.02,elasticsearch.03
+      - discovery.seed_hosts=elasticsearch02,elasticsearch03
+      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
       - bootstrap.memory_lock=true
       - http.cors.enabled=true
       - http.cors.allow-origin=*
@@ -58,25 +61,31 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - elasticsearch.01:/usr/share/elasticsearch/data
-      # - ./elasticsearch.01/data:/usr/share/elasticsearch/data
-      # - ./elasticsearch.01/logs:/usr/share/elasticsearch/logs
-      # - ./elasticsearch.01/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      # - ./elasticsearch.01/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./elasticsearch01:/usr/share/elasticsearch/data
+      # - ./elasticsearch01/data:/usr/share/elasticsearch/data
+      # - ./elasticsearch01/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch01/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ./elasticsearch01/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
     ports:
       - 9200:9200
       - 9300:9300
     networks:
       - elastic
+    logging:
+     driver: "json-file"
+     options:
+       max-size: "200k"
+       max-file: "10"
 
-  elasticsearch.02:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
-    container_name: elasticsearch.02
+ elasticsearch02:
+    image: elasticsearch:7.14.1
+    container_name: elasticsearch02
     environment:
-      - node.name=elasticsearch.02
+      - TZ=Asia/Shanghai
+      - node.name=elasticsearch02
       - cluster.name=elasticsearch-cluster
-      - discovery.seed_hosts=elasticsearch.01,elasticsearch.03
-      - cluster.initial_master_nodes=elasticsearch.01,elasticsearch.02,elasticsearch.03
+      - discovery.seed_hosts=elasticsearch01,elasticsearch03
+      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
       - bootstrap.memory_lock=true
       - http.cors.enabled=true
       - http.cors.allow-origin=*
@@ -93,26 +102,32 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - elasticsearch.02:/usr/share/elasticsearch/data
-      # - ./elasticsearch.02/data:/usr/share/elasticsearch/data
-      # - ./elasticsearch.02/logs:/usr/share/elasticsearch/logs
-      # - ./elasticsearch.02/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      # - ./elasticsearch.02/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./elasticsearch02:/usr/share/elasticsearch/data
+      # - ./elasticsearch02/data:/usr/share/elasticsearch/data
+      # - ./elasticsearch02/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch02/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ./elasticsearch02/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
     ports:
     ports:
       - 9201:9200
       - 9301:9300
     networks:
       - elastic
+    logging:
+     driver: "json-file"
+     options:
+       max-size: "200k"
+       max-file: "10"
 
-  elasticsearch.03:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.11.1
-    container_name: elasticsearch.03
+ elasticsearch03:
+    image: elasticsearch:7.14.1
+    container_name: elasticsearch03
     environment:
-      - node.name=elasticsearch.03
+      - TZ=Asia/Shanghai
+      - node.name=elasticsearch03
       - cluster.name=elasticsearch-cluster
-      - discovery.seed_hosts=elasticsearch.01,elasticsearch.02
-      - cluster.initial_master_nodes=elasticsearch.01,elasticsearch.02,elasticsearch.03
+      - discovery.seed_hosts=elasticsearch01,elasticsearch02
+      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
       - bootstrap.memory_lock=true
       - http.cors.enabled=true
       - http.cors.allow-origin=*
@@ -129,16 +144,21 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - elasticsearch.03:/usr/share/elasticsearch/data
-      # - ./elasticsearch.03/data:/usr/share/elasticsearch/data
-      # - ./elasticsearch.03/logs:/usr/share/elasticsearch/logs
-      # - ./elasticsearch.03/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      # - ./elasticsearch.03/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./elasticsearch03:/usr/share/elasticsearch/data
+      # - ./elasticsearch03/data:/usr/share/elasticsearch/data
+      # - ./elasticsearch03/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch03/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      # - ./elasticsearch03/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
     ports:
       - 9202:9200
       - 9302:9300
     networks:
       - elastic
+    logging:
+     driver: "json-file"
+     options:
+       max-size: "200k"
+       max-file: "10"
 
 
 
