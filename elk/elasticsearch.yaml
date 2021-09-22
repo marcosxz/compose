@@ -2,6 +2,7 @@
 # https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-docker.html
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_set_vm_max_map_count_to_at_least_262144 !!!note:7.14需要设置系统参数
 # https://www.cnblogs.com/reblue520/p/13962797.html
+# 删除: curl -XPOST "http://127.0.0.1:9200/logstash-*/_delete_by_query" -H 'Content-Type: application/json' -d '{"query": {"range": {"@timestamp": {"lt": "now-300d","format": "epoch_millis"}}}}'
 # 生成证书elastic-certificates.p12
 # 进入一个容器，在其中生成证书
 # es提供了生成证书的工具elasticsearch-certutil，我们可以在docker实例中生成它，然后拷贝出来，然后给集群使用
