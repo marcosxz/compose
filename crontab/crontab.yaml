@@ -1,0 +1,25 @@
+version: '3'
+
+networks:
+  elastic:
+    driver: bridge
+
+services:
+  crontab:
+    image: arcaneio/crontab:latest
+    container_name: crontab
+    environment: 
+      # 添加多个以'CRON_'开头的不重复的名称即可;格式[分 时 日 月 周 COMMAND]
+      # 测试用例,每分钟输出'crontab test'
+      # CRON_ECHO: |-
+      #   */1 * * * * echo crontab test
+      # 每天凌晨6点执行清除指定ES索引
+      CRON_ESRM: |- # 每天凌晨6点执行清除指定ES索引 * 6 */1 * *
+        * 6 */1 * * curl -w '\n' -s -XPOST "http://elasticsearch01:9200/logstash-*/_delete_by_query" -H 'Content-Type:application/json' -d '{"query":{"range":{"@timestamp":{"lt":"now-7d","format":"epoch_millis"}}}}'
+    networks:
+      - elastic
+    logging:
+     driver: "json-file"
+     options:
+       max-size: "200k"
+       max-file: "10"

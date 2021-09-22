@@ -55,8 +55,11 @@ services:
       # - xpack.security.transport.ssl.verification_mode=certificate
       # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
       # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
       memlock:
         soft: -1
         hard: -1
@@ -96,8 +99,11 @@ services:
       # - xpack.security.transport.ssl.verification_mode=certificate
       # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
       # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
       memlock:
         soft: -1
         hard: -1
@@ -137,8 +143,11 @@ services:
       # - xpack.security.transport.ssl.verification_mode=certificate
       # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
       # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
       memlock:
         soft: -1
         hard: -1
