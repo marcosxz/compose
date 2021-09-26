@@ -1,0 +1,49 @@
+# https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-docker.html
+instances:
+  - name: elasticsearch.node01
+    dns:
+      - elasticsearch.node01
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: elasticsearch.node02
+    dns:
+      - elasticsearch.node02
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: elasticsearch.node03
+    dns:
+      - elasticsearch.node03
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: kibana.node01
+    dns:
+      - kibana.node01
+      - localhost
+    ip:
+      - 127.0.0.1
+  - name: kibana.node02
+    dns:
+      - kibana.node02
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: logstash.node01
+    dns:
+      - logstash.node01
+      - localhost
+    ip:
+      - 127.0.0.1
+
+  - name: logstash.node02
+    dns:
+      - logstash.node02
+      - localhost
+    ip:
+      - 127.0.0.1

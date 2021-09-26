@@ -1,19 +1,8 @@
-# https://www.docker.elastic.co
 # https://www.elastic.co/guide/en/elastic-stack-get-started/current/get-started-docker.html
 # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#_set_vm_max_map_count_to_at_least_262144 !!!note:7.14需要设置系统参数
-# https://www.cnblogs.com/reblue520/p/13962797.html
 # 删除: curl -XPOST "http://127.0.0.1:9200/logstash-*/_delete_by_query" -H 'Content-Type: application/json' -d '{"query": {"range": {"@timestamp": {"lt": "now-300d","format": "epoch_millis"}}}}'
-# 生成证书elastic-certificates.p12
-# 进入一个容器，在其中生成证书
-# es提供了生成证书的工具elasticsearch-certutil，我们可以在docker实例中生成它，然后拷贝出来，然后给集群使用
-# docker exec -it xxx /bin/sh
-# 生成ca: elastic-stack-ca.p12
-# ./bin/elasticsearch-certutil ca
-# 再生成cert: elastic-certificates.p12
-# ./bin/elasticsearch-certutil cert --ca elastic-stack-ca.p12
-# 这个生成elastic-certificates.p12 就是我们需要使用的
-# 复制出证书，然后退出容器，挂载证书后重启容器
-
+# 生成证书
+# elasticsearch-certutil: https://www.elastic.co/guide/en/elasticsearch/reference/current/certutil.html
 # 生成密码
 # 进入一个容器，在其中生成密码
 # docker exec -it xxx /bin/sh
@@ -21,6 +10,9 @@
 # ./bin/elasticsearch-setup-passwords -h
 # ./bin/elasticsearch-setup-passwords auto
 # ./bin/elasticsearch-setup-passwords interactive
+# 集群自动设置密码
+# bin/elasticsearch-setup-passwords auto --batch --url https://elasticsearch.node01:9200
+# docker exec elasticsearch.node01 /bin/bash -c "bin/elasticsearch-setup-passwords auto --batch --url https://elasticsearch.node01:9200"
 
 version: '3'
 
@@ -29,78 +21,55 @@ networks:
     driver: bridge
 
 volumes:
- elasticsearch01:
+  elasticsearch.certs:
     driver: local
- elasticsearch02:
+  elasticsearch.node01:
     driver: local
- elasticsearch03:
+  elasticsearch.node02:
+    driver: local
+  elasticsearch.node03:
     driver: local
 
 services:
- elasticsearch01:
-    image: elasticsearch:7.14.1
-    container_name: elasticsearch01
-    environment:
-      - TZ=Asia/Shanghai
-      - node.name=elasticsearch01
-      - cluster.name=elasticsearch-cluster
-      - discovery.seed_hosts=elasticsearch02,elasticsearch03
-      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
-      - bootstrap.memory_lock=true
-      - http.cors.enabled=true
-      - http.cors.allow-origin=*
-      - http.cors.allow-credentials=true
-      # - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
-      # - xpack.security.enabled=true
-      # - xpack.security.transport.ssl.enabled=true
-      # - xpack.security.transport.ssl.verification_mode=certificate
-      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ulimits:
-      nofile:
-        soft: 65535
-        hard: 65535
-      memlock:
-        soft: -1
-        hard: -1
+  elasticsearch.certs:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.1
+    container_name: elasticsearch.certs
+    working_dir: /usr/share/elasticsearch
+    networks:
+      - elastic
     volumes:
-      - ./elasticsearch01:/usr/share/elasticsearch/data
-      # - ./elasticsearch01/data:/usr/share/elasticsearch/data
-      # - ./elasticsearch01/logs:/usr/share/elasticsearch/logs
-      # - ./elasticsearch01/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      # - ./elasticsearch01/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./elasticsearch.certs:/certs
+      - ./elasticsearch-certs.yaml:/usr/share/elasticsearch/config/certificates/elasticsearch-certs.yaml
+    command: >
+      bash -c '
+        yum install -y -q -e 0 unzip;
+        # PKCS#12 Model
+        if [[ ! -f /certs/elastic-stack-ca.p12 ]]; then
+          bin/elasticsearch-certutil ca --verbose --days 3600 --keysize 2048 --pass elastic123 --out /certs/elastic-stack-ca.p12;
+        fi;
+        if [[ ! -f /certs/elastic-stack-crt.p12 ]]; then
+          bin/elasticsearch-certutil cert --verbose --ca /certs/elastic-stack-ca.p12 --ca-pass elastic123 --pass elastic123 --out /certs/elastic-stack-crt.p12;
+        fi;
+        # PEM Model
+        if [[ ! -f /certs/elastic-stack-ca.zip ]]; then
+          bin/elasticsearch-certutil ca --verbose --pem --days 3600 --keysize 2048 --pass elastic123 --out /certs/elastic-stack-ca.zip;
+          unzip /certs/elastic-stack-ca.zip -d /certs;
+        fi;
+        if [[ ! -f /certs/elastic-stack-crt.zip ]]; then
+          bin/elasticsearch-certutil cert --verbose --pem --ca-cert /certs/ca/ca.crt --ca-key /certs/ca/ca.key --ca-pass elastic123 --in config/certificates/elasticsearch-certs.yaml -out /certs/elastic-stack-crt.zip;
+          unzip /certs/elastic-stack-crt.zip -d /certs;
+        fi;
+        chown -R 1000:0 /certs
+      '
+
+  elasticsearch.node01:
+    image: elasticsearch:7.14.1
+    container_name: elasticsearch.node01
     ports:
       - 9200:9200
       - 9300:9300
     networks:
       - elastic
-    logging:
-     driver: "json-file"
-     options:
-       max-size: "200k"
-       max-file: "10"
-
- elasticsearch02:
-    image: elasticsearch:7.14.1
-    container_name: elasticsearch02
-    environment:
-      - TZ=Asia/Shanghai
-      - node.name=elasticsearch02
-      - cluster.name=elasticsearch-cluster
-      - discovery.seed_hosts=elasticsearch01,elasticsearch03
-      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
-      - bootstrap.memory_lock=true
-      - http.cors.enabled=true
-      - http.cors.allow-origin=*
-      - http.cors.allow-credentials=true
-      # - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
-      # - xpack.security.enabled=true
-      # - xpack.security.transport.ssl.enabled=true
-      # - xpack.security.transport.ssl.verification_mode=certificate
-      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       nofile:
         soft: 65535
@@ -109,42 +78,49 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./elasticsearch02:/usr/share/elasticsearch/data
-      # - ./elasticsearch02/data:/usr/share/elasticsearch/data
-      # - ./elasticsearch02/logs:/usr/share/elasticsearch/logs
-      # - ./elasticsearch02/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      # - ./elasticsearch02/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./elasticsearch.node01:/usr/share/elasticsearch/data
+      - ./elasticsearch.certs:/usr/share/elasticsearch/config/certificates
+      # - ./elasticsearch.node01/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch.node01/config:/usr/share/elasticsearch/config
+    environment:
+      - TZ=Asia/Shanghai
+      - node.name=elasticsearch.node01
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch.node02,elasticsearch.node03
+      - cluster.initial_master_nodes=elasticsearch.node01,elasticsearch.node02,elasticsearch.node03
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-credentials=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - xpack.license.self_generated.type=trial
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch.node01/elasticsearch.node01.key
+      - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch.node01/elasticsearch.node01.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch.node01/elasticsearch.node01.crt
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch.node01/elasticsearch.node01.key
+      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
+      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  elasticsearch.node02:
+    image: elasticsearch:7.14.1
+    container_name: elasticsearch.node02
     ports:
       - 9201:9200
       - 9301:9300
     networks:
       - elastic
-    logging:
-     driver: "json-file"
-     options:
-       max-size: "200k"
-       max-file: "10"
-
- elasticsearch03:
-    image: elasticsearch:7.14.1
-    container_name: elasticsearch03
-    environment:
-      - TZ=Asia/Shanghai
-      - node.name=elasticsearch03
-      - cluster.name=elasticsearch-cluster
-      - discovery.seed_hosts=elasticsearch01,elasticsearch02
-      - cluster.initial_master_nodes=elasticsearch01,elasticsearch02,elasticsearch03
-      - bootstrap.memory_lock=true
-      - http.cors.enabled=true
-      - http.cors.allow-origin=*
-      - http.cors.allow-credentials=true
-      # - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
-      # - xpack.security.enabled=true
-      # - xpack.security.transport.ssl.enabled=true
-      # - xpack.security.transport.ssl.verification_mode=certificate
-      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/elastic-certificates.p12
-      # - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ulimits:
       nofile:
         soft: 65535
@@ -153,21 +129,91 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - ./elasticsearch03:/usr/share/elasticsearch/data
-      # - ./elasticsearch03/data:/usr/share/elasticsearch/data
-      # - ./elasticsearch03/logs:/usr/share/elasticsearch/logs
-      # - ./elasticsearch03/config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
-      # - ./elasticsearch03/certs/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./elasticsearch.node02:/usr/share/elasticsearch/data
+      - ./elasticsearch.certs:/usr/share/elasticsearch/config/certificates
+      # - ./elasticsearch.node02/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch.node02/config:/usr/share/elasticsearch/config
+    environment:
+      - TZ=Asia/Shanghai
+      - node.name=elasticsearch.node02
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch.node01,elasticsearch.node03
+      - cluster.initial_master_nodes=elasticsearch.node01,elasticsearch.node02,elasticsearch.node03
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-credentials=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - xpack.license.self_generated.type=trial
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch.node02/elasticsearch.node02.key
+      - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch.node02/elasticsearch.node02.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch.node02/elasticsearch.node02.crt
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch.node02/elasticsearch.node02.key
+      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
+      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  elasticsearch.node03:
+    image: elasticsearch:7.14.1
+    container_name: elasticsearch.node03
     ports:
       - 9202:9200
       - 9302:9300
     networks:
       - elastic
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./elasticsearch.node03:/usr/share/elasticsearch/data
+      - ./elasticsearch.certs:/usr/share/elasticsearch/config/certificates
+      # - ./elasticsearch.node03/logs:/usr/share/elasticsearch/logs
+      # - ./elasticsearch.node03/config:/usr/share/elasticsearch/config
+    environment:
+      - TZ=Asia/Shanghai
+      - node.name=elasticsearch.node03
+      - cluster.name=elasticsearch-cluster
+      - discovery.seed_hosts=elasticsearch.node01,elasticsearch.node02
+      - cluster.initial_master_nodes=elasticsearch.node01,elasticsearch.node02,elasticsearch.node03
+      - bootstrap.memory_lock=true
+      - http.cors.enabled=true
+      - http.cors.allow-origin=*
+      - http.cors.allow-credentials=true
+      - http.cors.allow-headers=X-Requested-With,X-Auth-Token,Content-Type,Content-Length,Authorization
+      - xpack.license.self_generated.type=trial
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch.node03/elasticsearch.node03.key
+      - xpack.security.http.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - xpack.security.http.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch.node03/elasticsearch.node03.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certificates/ca/ca.crt
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certificates/elasticsearch.node03/elasticsearch.node03.crt
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certificates/elasticsearch.node03/elasticsearch.node03.key
+      # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
+      # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     logging:
-     driver: "json-file"
-     options:
-       max-size: "200k"
-       max-file: "10"
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
 
 
 

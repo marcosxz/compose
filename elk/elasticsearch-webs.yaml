@@ -1,0 +1,45 @@
+version: '3'
+
+networks:
+  elastic:
+    driver: bridge
+
+services:
+  elasticsearch.head:
+    image: mobz/elasticsearch-head:5
+    container_name: elasticsearch.head
+    ports:
+      - 9100:9100
+    networks:
+      - elastic
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  elasticsearch.dejavu:
+    image: appbaseio/dejavu
+    container_name: elasticsearch.dejavu
+    ports:
+      - 1358:1358
+    networks:
+      - elastic
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  elasticsearch.elasticHD:
+    image: containerize/elastichd
+    container_name: elasticsearch.elasticHD
+    ports:
+      - 9800:9800
+    networks:
+      - elastic
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
