@@ -9,9 +9,9 @@ volumes:
     driver: local
 
 services:
-  crontab:
+  elasticsearch.crontab:
     image: arcaneio/crontab:latest
-    container_name: crontab
+    container_name: elasticsearch.crontab
     environment: 
       # 添加多个以'CRON_'开头的不重复的名称即可;格式[分 时 日 月 周 COMMAND]
       # 测试用例,每分钟输出'crontab test'
