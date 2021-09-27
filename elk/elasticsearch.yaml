@@ -10,8 +10,9 @@
 # ./bin/elasticsearch-setup-passwords -h
 # ./bin/elasticsearch-setup-passwords auto
 # ./bin/elasticsearch-setup-passwords interactive
-# 集群自动设置密码
+# 集群设置密码
 # bin/elasticsearch-setup-passwords auto --batch --url https://elasticsearch.node01:9200
+# bin/elasticsearch-setup-passwords interactive --batch --url https://elasticsearch.node01:9200
 # docker exec elasticsearch.node01 /bin/bash -c "bin/elasticsearch-setup-passwords auto --batch --url https://elasticsearch.node01:9200"
 
 version: '3'

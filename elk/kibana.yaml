@@ -56,8 +56,8 @@ services:
       SERVER_PUBLICBASEURL: http://0.0.0.0:5601
       ELASTICSEARCH_URL: https://elasticsearch.node01:9200
       ELASTICSEARCH_HOSTS: '["https://elasticsearch.node01:9200","https://elasticsearch.node02:9201","https://elasticsearch.node03:9202"]'
-      ELASTICSEARCH_USERNAME: kibana_system
-      ELASTICSEARCH_PASSWORD: AWEny6psWSuWZ0auwNGC
+      ELASTICSEARCH_USERNAME: "kibana_system"
+      ELASTICSEARCH_PASSWORD: "AWEny6psWSuWZ0auwNGC"
       I18N_LOCALE: zh-CN
       SERVER_SSL_ENABLED: "true"
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/certificates/ca/ca.crt
