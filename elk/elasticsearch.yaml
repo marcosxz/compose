@@ -108,6 +108,11 @@ services:
       # - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
       # - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certificates/elastic-stack-crt.p12
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    healthcheck:
+      test: curl --cacert /usr/share/elasticsearch/config/certificates/ca/ca.crt -s https://localhost:9200 >/dev/null; if [[ $$? == 52 ]]; then echo 0; else echo 1; fi
+      interval: 30s
+      timeout: 10s
+      retries: 5
     logging:
       driver: "json-file"
       options:
