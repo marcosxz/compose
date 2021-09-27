@@ -34,6 +34,10 @@ services:
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/certificates/ca/ca.crt
       SERVER_SSL_KEY: /usr/share/kibana/config/certificates/kibana.node01/kibana.node01.key
       SERVER_SSL_CERTIFICATE: /usr/share/kibana/config/certificates/kibana.node01/kibana.node01.crt
+      XPACK_SECURITY_SESSION_IDLETIMEOUT: "10m"
+      XPACK_SECURITY_SESSION_LIFESPAN: "10m"
+      XPACK_SECURITY_ENCRYPTIONKEY: "bbfe8ae38274521f9311cb5467cbee41"
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "abf6f2da5ba45222b4e66e38d50e7d63"
 
   kibana.node02:
     image: kibana:7.14.1
@@ -63,3 +67,7 @@ services:
       ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES: /usr/share/kibana/config/certificates/ca/ca.crt
       SERVER_SSL_KEY: /usr/share/kibana/config/certificates/kibana.node02/kibana.node02.key
       SERVER_SSL_CERTIFICATE: /usr/share/kibana/config/certificates/kibana.node02/kibana.node02.crt
+      XPACK_SECURITY_SESSION_IDLETIMEOUT: "10m"
+      XPACK_SECURITY_SESSION_LIFESPAN: "10m"
+      XPACK_SECURITY_ENCRYPTIONKEY: "bbfe8ae38274521f9311cb5467cbee41"
+      XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "abf6f2da5ba45222b4e66e38d50e7d63"
