@@ -36,7 +36,12 @@ services:
       PIPELINE_WORKERS: 2
       PIPELINE_BATCH_SIZE: 125
       PIPELINE_BATCH_DELAY: 50
-      XPACK_MONITORING_ENABLED: "false"
+      XPACK_MONITORING_ENABLED: "true"
+      XPACK_MONITORING_ELASTICSEARCH_SNIFFING: "true"
+      XPACK_MONITORING_ELASTICSEARCH_HOSTS: [ "https://elasticsearch.node01:9200","https://elasticsearch.node02:9200","https://elasticsearch.node03:9200" ]
+      XPACK_MONITORING_ELASTICSEARCH_USERNAME: "elastic"
+      XPACK_MONITORING_ELASTICSEARCH_PASSWORD: "VVW0QqhyXNxGImWt0JF5"
+      XPACK_MONITORING_ELASTICSEARCH_SSL_CERTIFICATE_AUTHORITY: "/usr/share/logstash/config/certificates/ca/ca.crt"
       CONFIG_DEBUG: "true"
       CONFIG_STRING: |
         input {
@@ -203,7 +208,12 @@ services:
       PIPELINE_WORKERS: 2
       PIPELINE_BATCH_SIZE: 125
       PIPELINE_BATCH_DELAY: 50
-      XPACK_MONITORING_ENABLED: "false"
+      XPACK_MONITORING_ENABLED: "true"
+      XPACK_MONITORING_ELASTICSEARCH_SNIFFING: "true"
+      XPACK_MONITORING_ELASTICSEARCH_HOSTS: [ "https://elasticsearch.node01:9200","https://elasticsearch.node02:9200","https://elasticsearch.node03:9200" ]
+      XPACK_MONITORING_ELASTICSEARCH_USERNAME: "elastic"
+      XPACK_MONITORING_ELASTICSEARCH_PASSWORD: "VVW0QqhyXNxGImWt0JF5"
+      XPACK_MONITORING_ELASTICSEARCH_SSL_CERTIFICATE_AUTHORITY: "/usr/share/logstash/config/certificates/ca/ca.crt"
       CONFIG_DEBUG: "true"
       CONFIG_STRING: |
         input {
