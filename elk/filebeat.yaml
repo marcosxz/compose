@@ -1,0 +1,25 @@
+version: '3'
+
+volumes:
+  filebeat.log:
+    driver: local
+
+services:
+  filebeat.agent:
+    image: elastic/filebeat:7.14.1
+    container_name: filebeat.agent
+    user: root
+    command: ["--strict.perms=false"]
+    environment:
+      TZ: 'Asia/Shanghai'
+    volumes:
+      - ./filebeat.docker.yaml:/usr/share/filebeat/filebeat.yml:ro
+      # - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log/filebeat:/var/log/filebeat
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+      

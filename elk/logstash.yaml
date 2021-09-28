@@ -93,6 +93,20 @@ services:
                 }
             }
 
+            if [type] == "kafkalog" and [agent][type] == "filebeat" {
+                if [file][path] == "/var/log/filebeat/nginx/access.log" {
+                    json {
+                        source => "message"
+                        remove_field => ["message"]
+                    }
+                }
+                if [file][path] == "/var/log/filebeat/nginx/error.log" {
+                    mutate {
+                        add_field => { "[app]" => "all_nginx_error" }
+                    }
+                }
+            }
+
             if [type] == "kafkalog" and [app] {
                 mutate {
                     add_field => { "[@metadata][es_index]" => "logstash-%{app}_%{+YYYYMMdd}" }
@@ -131,6 +145,15 @@ services:
             if [type] == "httplog" {
                 mutate {
                     remove_field => ["headers"]
+                }
+            }
+            if [type] == "kafkalog" and [agent][type] == "filebeat" {
+                mutate {
+                    remove_field => ["agent"]
+                    remove_field => ["input"]
+                    remove_field => ["host"]
+                    remove_field => ["log"]
+                    remove_field => ["ecs"]
                 }
             }
         }
@@ -265,6 +288,20 @@ services:
                 }
             }
 
+            if [type] == "kafkalog" and [agent][type] == "filebeat" {
+                if [file][path] == "/var/log/filebeat/nginx/access.log" {
+                    json {
+                        source => "message"
+                        remove_field => ["message"]
+                    }
+                }
+                if [file][path] == "/var/log/filebeat/nginx/error.log" {
+                    mutate {
+                        add_field => { "[app]" => "all_nginx_error" }
+                    }
+                }
+            }
+
             if [type] == "kafkalog" and [app] {
                 mutate {
                     add_field => { "[@metadata][es_index]" => "logstash-%{app}_%{+YYYYMMdd}" }
@@ -303,6 +340,15 @@ services:
             if [type] == "httplog" {
                 mutate {
                     remove_field => ["headers"]
+                }
+            }
+            if [type] == "kafkalog" and [agent][type] == "filebeat" {
+                mutate {
+                    remove_field => ["agent"]
+                    remove_field => ["input"]
+                    remove_field => ["host"]
+                    remove_field => ["log"]
+                    remove_field => ["ecs"]
                 }
             }
         }
