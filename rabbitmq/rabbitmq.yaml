@@ -1,0 +1,107 @@
+# https://hub.docker.com/r/bitnami/rabbitmq
+version: '3'
+
+networks:
+  rabbitmq:
+    driver: bridge
+
+volumes:
+  rabbitmq_node1:
+    driver: local
+  rabbitmq_node2:
+    driver: local
+  rabbitmq_node3:
+    driver: local
+
+services:
+  rabbitmq_node1:
+    image: bitnami/rabbitmq:3.9
+    container_name: rabbitmq_node1
+    hostname: rabbitmq_node1
+    restart: always
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - ./rabbitmq_node1/data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_NODE_TYPE=stats
+      - RABBITMQ_NODE_NAME=rabbit@rabbitmq_node1
+      - RABBITMQ_ERL_COOKIE=CURIOAPPLICATION
+      - RABBITMQ_USERNAME=root
+      - RABBITMQ_PASSWORD=root
+      - RABBITMQ_VHOST=wy_vhost
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  rabbitmq_node2:
+    image: bitnami/rabbitmq:3.9
+    container_name: rabbitmq_node2
+    hostname: rabbitmq_node2
+    restart: always
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - rabbitmq
+    ports:
+      - "5673:5672"
+    volumes:
+      - ./rabbitmq_node2/data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_NODE_TYPE=queue-disc
+      - RABBITMQ_NODE_NAME=rabbit@rabbitmq_node2
+      - RABBITMQ_ERL_COOKIE=CURIOAPPLICATION
+      - RABBITMQ_CLUSTER_NODE_NAME=rabbit@rabbitmq_node1
+      - RABBITMQ_VHOST=wy_vhost
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
+
+  rabbitmq_node3:
+    image: bitnami/rabbitmq:3.9
+    container_name: rabbitmq_node3
+    hostname: rabbitmq_node3
+    restart: always
+    ulimits:
+      nofile:
+        soft: 65535
+        hard: 65535
+      memlock:
+        soft: -1
+        hard: -1
+    networks:
+      - rabbitmq
+    ports:
+      - "5674:5672"
+    volumes:
+      - ./rabbitmq_node3/data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_NODE_TYPE=queue-ram
+      - RABBITMQ_NODE_NAME=rabbit@rabbitmq_node3
+      - RABBITMQ_ERL_COOKIE=CURIOAPPLICATION
+      - RABBITMQ_CLUSTER_NODE_NAME=rabbit@rabbitmq_node1
+      - RABBITMQ_VHOST=wy_vhost
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "200k"
+        max-file: "10"
