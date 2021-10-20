@@ -34,6 +34,7 @@ services:
     volumes:
       - ./rabbitmq_node1/data:/var/lib/rabbitmq
     environment:
+      - TZ=Asia/Shanghai
       - RABBITMQ_NODE_TYPE=stats
       - RABBITMQ_NODE_NAME=rabbit@rabbitmq_node1
       - RABBITMQ_ERL_COOKIE=CURIOAPPLICATION
@@ -65,6 +66,7 @@ services:
     volumes:
       - ./rabbitmq_node2/data:/var/lib/rabbitmq
     environment:
+      - TZ=Asia/Shanghai
       - RABBITMQ_NODE_TYPE=queue-disc
       - RABBITMQ_NODE_NAME=rabbit@rabbitmq_node2
       - RABBITMQ_ERL_COOKIE=CURIOAPPLICATION
@@ -95,6 +97,7 @@ services:
     volumes:
       - ./rabbitmq_node3/data:/var/lib/rabbitmq
     environment:
+      - TZ=Asia/Shanghai
       - RABBITMQ_NODE_TYPE=queue-ram
       - RABBITMQ_NODE_NAME=rabbit@rabbitmq_node3
       - RABBITMQ_ERL_COOKIE=CURIOAPPLICATION
