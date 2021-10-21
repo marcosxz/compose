@@ -7,7 +7,7 @@ networks:
     driver: bridge
 
 volumes:
-  jaeger:
+  badger:
     driver: local
 
 services:
