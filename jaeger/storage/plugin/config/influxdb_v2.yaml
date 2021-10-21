@@ -1,0 +1,5 @@
+influxdb.host: http://localhost:8086
+influxdb.database: tracing
+influxdb.organization: org
+influxdb.bucket: tracing
+influxdb.token: xxxxxxxxxxxxxxxx

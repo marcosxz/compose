@@ -1,0 +1,74 @@
+# https://www.jaegertracing.io/docs/1.27/deployment/
+# https://github.com/influxdata/jaeger-influxdb
+version: '3'
+
+networks:
+  jaeger:
+    driver: bridge
+
+volumes:
+  jaeger:
+    driver: local
+
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.27
+    container_name: jaeger
+    restart: always
+    networks:
+      - jaeger
+    ports:
+      # 端口号	协议	  组件    功能
+      # 5775	UDP	  agent   通过thrift的compact协议接收zipkin.thrift数据
+      # 6831	UDP	  agent	  通过thrift的compact协议接收jaeger.thrift数据
+      # 6832	UDP	  agent	  通过thrift的binary协议接收jaeger.thrift数据
+      # 5778	HTTP  agent	  服务配置接口
+      # 16685	gRPC  Protobuf/gRPC QueryService
+      # 16686	HTTP  web	  Jaeger Web UI的端口
+      # 9411	HTTP  collector	兼容zipkin的http端点
+      - 5775:5775/udp
+      - 6831:6831/udp
+      - 6832:6832/udp
+      - 5778:5778
+      - 16685:16685
+      - 16686:16686
+      - 9411:9411
+    volumes:
+      #- badger:/badger
+      - ./storage:/storage
+    environment:
+      - TZ=Asia/Shanghai
+      - COLLECTOR_ZIPKIN_HTTP_PORT=9411
+      # storage in badger
+      #- SPAN_STORAGE_TYPE=badger
+      #- BADGER_EPHEMERAL=false
+      #- BADGER_DIRECTORY_VALUE=/badger/data
+      #- BADGER_DIRECTORY_KEY=/badger/key
+      # storage in plugin
+      - SPAN_STORAGE_TYPE=grpc-plugin
+      - GRPC_STORAGE_PLUGIN_BINARY=/storage/plugin/binary/jaeger-influxdb
+      #- GRPC_STORAGE_PLUGIN_CONFIGURATION_FILE=/storage/plugin/config/influxdb_v1.yaml
+      - INFLUXDB_HOST=http://localhost:8086
+      #- INFLUXDB_USERNAME=root
+      #- INFLUXDB_PASSWORD=root
+      #- INFLUXDB_DATABASE=tracing
+      - INFLUXDB_ORGANIZATION=org
+      - INFLUXDB_BUCKET=tracing
+      - INFLUXDB_TOKEN=xxxxxxxxxxxxxxxx
+      - INFLUXDB_RETENTION_POLICY=tracing
+      - INFLUXDB_RETENTION_HOURS=24
+      - INFLUXDB_SHARD_DURATION_HOURS=1
+
+  hotrod:
+    image: jaegertracing/example-hotrod:latest
+    container_name: hotrod
+    ports:
+      - "8080:8080"
+    command: [ "all" ]
+    environment:
+      - JAEGER_AGENT_HOST=jaeger
+      # Note: if your application is using Node.js Jaeger Client, you need port 6832,
+      #       unless issue https://github.com/jaegertracing/jaeger/issues/1596 is resolved.
+      - JAEGER_AGENT_PORT=6831
+    networks:
+      - jaeger

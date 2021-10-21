@@ -1,0 +1,4 @@
+influxdb.host: http://localhost:8086
+influxdb.database: tracing
+influxdb.username: root
+influxdb.password: root
