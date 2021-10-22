@@ -1,0 +1,313 @@
+# https://hub.docker.com/_/consul
+# https://hub.docker.com/r/bitnami/consul
+# https://blog.csdn.net/qq_24384579/article/details/86480522
+version: '3'
+
+networks:
+  consul:
+    driver: bridge
+
+volumes:
+  consul-dc1-server-x1:
+    driver: local
+  consul-dc1-server-x2:
+    driver: local
+  consul-dc1-server-x3:
+    driver: local
+  consul-dc1-client-x1:
+    driver: local
+  consul-dc2-server-x1:
+    driver: local
+  consul-dc2-server-x2:
+    driver: local
+  consul-dc2-server-x3:
+    driver: local
+  consul-dc2-client-x1:
+    driver: local
+
+services:
+  consul-dc1-server-x1:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc1-server-x1
+    restart: always
+    networks:
+      - consul
+    volumes:
+      - 'consul-dc1-server-x1:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc1
+      CONSUL_AGENT_MODE: server
+      CONSUL_BOOTSTRAP_EXPECT: 3
+      CONSUL_ENABLE_UI: "false"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc1-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc1-server-x1",
+          "node_id":"1b37dfcc-da0a-428f-b2fe-9f8518d806c2",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+            "enable_token_persistence":true,
+            "tokens":{
+              "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+              "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+            }
+          }
+        }
+
+  consul-dc1-server-x2:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc1-server-x2
+    restart: always
+    networks:
+      - consul
+    volumes:
+      - 'consul-dc1-server-x2:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc1
+      CONSUL_AGENT_MODE: server
+      CONSUL_BOOTSTRAP_EXPECT: 3
+      CONSUL_ENABLE_UI: "false"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc1-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc1-server-x2",
+          "node_id":"d45d90d7-73ee-4b70-a673-dd14645ab3fe",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+              "enable_token_persistence":true,
+              "tokens":{
+                "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+                "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+              }
+            }
+         }
+
+  consul-dc1-server-x3:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc1-server-x3
+    restart: always
+    networks:
+      - consul
+    volumes:
+      - 'consul-dc1-server-x3:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc1
+      CONSUL_AGENT_MODE: server
+      CONSUL_BOOTSTRAP_EXPECT: 3
+      CONSUL_ENABLE_UI: "false"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc1-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc1-server-x3",
+          "node_id":"8274d51b-3280-4aff-bed4-30f3e534b18c",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+              "enable_token_persistence":true,
+              "tokens":{
+                "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+                "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+              }
+            }
+         }
+
+  consul-dc1-client-x1:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc1-client-x1
+    restart: always
+    networks:
+      - consul
+    ports:
+      - '8300:8300'
+      - '8301:8301'
+      - '8301:8301/udp'
+      - '8500:8500'
+      - '8600:8600'
+      - '8600:8600/udp'
+    volumes:
+      - 'consul-dc1-client-x1:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc1
+      CONSUL_AGENT_MODE: client
+      CONSUL_BOOTSTRAP_EXPECT: 0
+      CONSUL_ENABLE_UI: "true"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc1-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc1-client-x1",
+          "node_id":"2096b02e-c88d-42a4-9b47-17d1965970b7",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+              "enable_token_persistence":true,
+              "tokens":{
+                "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+                "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+              }
+            }
+         }
+
+  consul-dc2-server-x1:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc2-server-x1
+    restart: always
+    networks:
+      - consul
+    volumes:
+      - 'consul-dc2-server-x1:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc2
+      CONSUL_AGENT_MODE: server
+      CONSUL_BOOTSTRAP_EXPECT: 3
+      CONSUL_ENABLE_UI: "false"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc2-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc2-server-x1",
+          "node_id":"d34211eb-8bc9-4dcf-9a5a-e0e4e4ce5acf",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+            "enable_token_persistence":true,
+            "tokens":{
+              "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+              "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+            }
+          }
+        }
+
+  consul-dc2-server-x2:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc2-server-x2
+    restart: always
+    networks:
+      - consul
+    volumes:
+      - 'consul-dc2-server-x2:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc2
+      CONSUL_AGENT_MODE: server
+      CONSUL_BOOTSTRAP_EXPECT: 3
+      CONSUL_ENABLE_UI: "false"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc2-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc2-server-x2",
+          "node_id":"e2036815-1fe5-4056-aeb1-1b14111550b7",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+            "enable_token_persistence":true,
+            "tokens":{
+              "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+              "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+            }
+          }
+        }
+
+  consul-dc2-server-x3:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc2-server-x3
+    restart: always
+    networks:
+      - consul
+    volumes:
+      - 'consul-dc2-server-x3:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc2
+      CONSUL_AGENT_MODE: server
+      CONSUL_BOOTSTRAP_EXPECT: 3
+      CONSUL_ENABLE_UI: "false"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc2-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc2-server-x3",
+          "node_id":"7cfbc540-4293-4705-9a15-ae3e3b075a27",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+            "enable_token_persistence":true,
+            "tokens":{
+              "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+              "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+            }
+          }
+        }
+
+  consul-dc2-client-x1:
+    image: bitnami/consul:1.10.3
+    container_name: consul-dc2-client-x1
+    restart: always
+    networks:
+      - consul
+    ports:
+      - '18300:8300'
+      - '18301:8301'
+      - '18301:8301/udp'
+      - '18500:8500'
+      - '18600:8600'
+      - '18600:8600/udp'
+    volumes:
+      - 'consul-dc2-client-x1:/bitnami'
+    environment:
+      TZ: Asia/Shanghai
+      CONSUL_DATACENTER: dc2
+      CONSUL_AGENT_MODE: client
+      CONSUL_BOOTSTRAP_EXPECT: 0
+      CONSUL_ENABLE_UI: "true"
+      CONSUL_CLIENT_LAN_ADDRESS: 0.0.0.0
+      CONSUL_DISABLE_KEYRING_FILE: "true"
+      CONSUL_RETRY_JOIN_ADDRESS: consul-dc2-server-x1
+      CONSUL_RETRY_JOIN_WAN_ADDRESS: consul-dc1-server-x1
+      CONSUL_LOCAL_CONFIG: |
+        {
+          "node_name":"dc2-client-x1",
+          "node_id":"82af2c7c-9f00-42fb-88ab-66fa0ff0b692",
+          "encrypt":"manVqjrwaiBC6rjZl0M1JaJyXgEJLc6o9dxouMavtMo=",
+          "acl":{
+            "enabled":true,
+            "default_policy":"deny",
+            "enable_token_persistence":true,
+            "tokens":{
+              "master":"1aa65195-3f39-de7b-0ac8-78602cdaf366",
+              "agent":"1aa65195-3f39-de7b-0ac8-78602cdaf366"
+            }
+          }
+        }
