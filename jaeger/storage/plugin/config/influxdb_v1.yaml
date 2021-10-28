@@ -1,4 +1,6 @@
-influxdb.host: http://localhost:8086
+influxdb.host: http://172.16.65.202:8087
 influxdb.database: tracing
 influxdb.username: root
 influxdb.password: root
+influxdb.retention_policy: tracing
+influxdb:unsafe_ssl: false

@@ -1,5 +1,4 @@
-influxdb.host: http://localhost:8086
-influxdb.database: tracing
-influxdb.organization: org
+influxdb.host: http://172.16.65.202:8086
+influxdb.organization: jaeger
 influxdb.bucket: tracing
-influxdb.token: xxxxxxxxxxxxxxxx
+influxdb.token: DtsM7tjNDapE-6J9ljj6xLLtTqE9foEg2lqfYuHMpfpB3okDVM5-Kn6w-GwFhVt4Q7FnEDTT7-V5Il_H7vckQg==
