@@ -1,5 +1,6 @@
 # https://www.jaegertracing.io/docs/1.27/deployment/
 # https://github.com/influxdata/jaeger-influxdb
+# https://www.jaegertracing.io/docs/1.27/cli/#jaeger-all-in-one
 version: '3'
 
 networks:
@@ -54,17 +55,7 @@ services:
       # storage in plugin
       - SPAN_STORAGE_TYPE=grpc-plugin
       - GRPC_STORAGE_PLUGIN_BINARY=/storage/plugin/binary/jaeger-influxdb
-      #- GRPC_STORAGE_PLUGIN_CONFIGURATION_FILE=/storage/plugin/config/influxdb_v1.yaml
-      - INFLUXDB_HOST=http://localhost:8086
-      - INFLUXDB_USERNAME=root
-      - INFLUXDB_PASSWORD=root
-      - INFLUXDB_DATABASE=tracing
-      #- INFLUXDB_ORGANIZATION=org
-      #- INFLUXDB_BUCKET=tracing
-      #- INFLUXDB_TOKEN=xxxxxxxxxxxxxxxx
-      #- INFLUXDB_RETENTION_POLICY=tracing
-      #- INFLUXDB_RETENTION_HOURS=24
-      #- INFLUXDB_SHARD_DURATION_HOURS=1
+      - GRPC_STORAGE_PLUGIN_CONFIGURATION_FILE=/storage/plugin/config/influxdb_v1.yaml
 
   hotrod:
     image: jaegertracing/example-hotrod:latest
