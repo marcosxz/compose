@@ -81,6 +81,11 @@ services:
                             source => "message"
                             target => "[@metadata][message_ctx]"
                         }
+                        if [@metadata][message_ctx][app] in [ "zzz.nginx.access", "xxx.xxx.xxx" ] {
+                            if [@metadata][message_ctx][status] in [ 200, 204 ] {
+                                drop {}
+                            }
+                        }
                     }
                     if [@metadata][filebeat_ctx][log][file][path] == "/var/log/filebeat/nginx/error.log" {
                         mutate {
@@ -260,6 +265,11 @@ services:
                     json {
                         source => "message"
                         remove_field => ["message"]
+                    }
+                    if [@metadata][message_ctx][app] in [ "zzz.nginx.access", "xxx.xxx.xxx" ] {
+                        if [@metadata][message_ctx][status] in [ 200, 204 ] {
+                            drop {}
+                        }
                     }
                 }
                 if [log][file][path] == "/var/log/filebeat/nginx/error.log" {
